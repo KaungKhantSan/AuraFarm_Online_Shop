@@ -1,8 +1,17 @@
-import React from 'react'
+import ProductList from "../components/products/ProductList"
 
 const Home = () => {
   return (
-    <div>Home Page</div>
+    <main className="mt-16">
+      <section>
+        <h2 className="text-2xl font-bold">New Arrival</h2>
+        <ProductList/>
+      </section>
+      <section className="mt-16">
+        <h2 className="text-2xl font-bold">Best Deals</h2>
+        <ProductList/>
+        </section>
+        </main>
   )
 }
 
