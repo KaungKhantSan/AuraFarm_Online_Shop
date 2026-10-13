@@ -7,6 +7,14 @@ import Home from "./Pages/Home.tsx";
 import Register from "./Pages/Register.tsx";
 import Login from "./Pages/Login.tsx";
 import ProductDetails from "./Pages/ProductDetails.tsx";
+import { Provider } from "react-redux";
+import { store } from "./store/index.ts";
+import { Toaster } from "./components/ui/toast.tsx";
+import IsLogin from "./Pages/IsLogin.tsx";
+import Profile from "./Pages/Profile.tsx";
+import ForgotPassword from "./Pages/ForgotPassword.tsx";
+import ForgotPasswordLogin from "./Pages/ForgotPasswordLogin.tsx";
+import ProductFilter from "./Pages/ProductFilter.tsx";
 
 const router = createBrowserRouter([
   {
@@ -29,12 +37,35 @@ const router = createBrowserRouter([
         path: "/product/:id",
         element: <ProductDetails />,
       },
+      {
+        path: "/reset-password/:id",
+        element: <ForgotPassword />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPasswordLogin />,
+      },
+      {
+        path: "/product/filter",
+        element: <ProductFilter />,
+      },
+      {
+        path: "/profile",
+        element: (
+          <IsLogin>
+            <Profile />
+          </IsLogin>
+        ),
+      },
     ],
   },
 ]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <Provider store={store}>
+      <Toaster />
+      <RouterProvider router={router} />
+    </Provider>
   </StrictMode>,
 );
