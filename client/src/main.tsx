@@ -10,11 +10,14 @@ import ProductDetails from "./Pages/ProductDetails.tsx";
 import { Provider } from "react-redux";
 import { store } from "./store/index.ts";
 import { Toaster } from "./components/ui/toast.tsx";
-import IsLogin from "./Pages/IsLogin.tsx";
+import IsLogin from "./Pages/protector/IsLogin.tsx";
 import Profile from "./Pages/Profile.tsx";
 import ForgotPassword from "./Pages/ForgotPassword.tsx";
 import ForgotPasswordLogin from "./Pages/ForgotPasswordLogin.tsx";
 import ProductFilter from "./Pages/ProductFilter.tsx";
+import IsAdmin from "./Pages/protector/IsAdmin.tsx";
+import ProductCreate from "./Pages/admin/ProductCreate.tsx";
+import Panel from "./Pages/admin/Panel.tsx";
 
 const router = createBrowserRouter([
   {
@@ -56,6 +59,20 @@ const router = createBrowserRouter([
             <Profile />
           </IsLogin>
         ),
+      },
+      {
+        path: "/admin",
+        element: (
+          <IsAdmin>
+            <Panel />
+          </IsAdmin>
+        ),
+        children: [
+          {
+            path: "/admin/product-create",
+            element: <ProductCreate />,
+          },
+        ],
       },
     ],
   },

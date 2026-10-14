@@ -84,7 +84,7 @@ function ForgotPasswordLogin() {
               type="submit"
               disabled={isLoading}
               className={
-                "w-full mt-2 border-2 rounded-xl p-2 text-sm bg-gray-700 text-white mb-2"
+                "w-full mt-2 border-2 rounded-xl p-2 text-sm bg-gray-700 text-white mb-2 cursor-pointer"
               }
             >
               Send Email
