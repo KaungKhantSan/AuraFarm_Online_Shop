@@ -1,10 +1,16 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { productSchema, type ProductFormInputs } from "@/schema/product";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import ImageUpload from "./ImageUpload";
+import ImageUpload from "../../components/admin/ImageUpload";
+import Category from "../../components/admin/Category";
+import ColorPicker from "../../components/admin/ColorPicker";
+import Sizes from "../../components/admin/Sizes";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import Tiptap from "@/components/editor/Tiptap";
 
 interface ProductFormPropts {
   initialData?: any;
@@ -44,7 +50,18 @@ function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPropts) {
               )}
             />
           </FieldGroup>
-          {/* description */}
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Description</FieldLabel>
+                  <Tiptap value={field.value} onChange={field.onChange} />
+                </Field>
+              )}
+            />
+          </FieldGroup>
           <div className="grid grid-cols-2 gap-4">
             <FieldGroup>
               <Controller
@@ -95,6 +112,85 @@ function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPropts) {
               )}
             />
           </FieldGroup>
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Category</FieldLabel>
+                  <Category value={field.value} onChange={field.onChange} />
+                </Field>
+              )}
+            />
+          </FieldGroup>
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Color</FieldLabel>
+                  <ColorPicker colors={field.value} onChange={field.onChange} />
+                </Field>
+              )}
+            />
+          </FieldGroup>
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="sizes"
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Sizes</FieldLabel>
+                  <Sizes sizes={field.value} onChange={field.onChange} />
+                </Field>
+              )}
+            />
+          </FieldGroup>
+          <div className="flex gap-2">
+            <FieldGroup>
+              <Controller
+                control={form.control}
+                name="is_new_arrival"
+                render={({ field }) => (
+                  <Field
+                    className={"flex flex-row rounded-md border px-5 py-3"}
+                  >
+                    <FieldLabel>New Arrival</FieldLabel>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+            <FieldGroup>
+              <Controller
+                control={form.control}
+                name="is_feature"
+                render={({ field }) => (
+                  <Field
+                    className={"flex flex-row rounded-md border px-5 py-3"}
+                  >
+                    <FieldLabel>Featured Items</FieldLabel>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+          </div>
+          <Button type="submit" disabled={isLoading} className={"w-full"}>
+            {isLoading
+              ? "Saving..."
+              : initialData
+                ? "Update Product"
+                : "Create Product"}
+          </Button>
         </form>
       </CardContent>
     </Card>
