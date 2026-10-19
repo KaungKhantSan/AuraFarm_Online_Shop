@@ -15,7 +15,7 @@ export const productSchema = z.object({
   images: z
     .array(
       z.object({
-        file: z.instanceof(File).optional(),
+        file: z.string().optional(),
         preview: z.string(),
         public_alt: z.string().optional(),
       }),
@@ -24,9 +24,7 @@ export const productSchema = z.object({
   color: z
     .array(z.string())
     .min(1, { message: "At least 1 color is require." }),
-  sizes: z
-    .array(z.enum(["s", "l", "m", "xl", "xxl"]))
-    .min(1, { message: "At least 1 size is require." }),
+  sizes: z.array(z.string()).min(1, { message: "At least 1 size is require." }),
   is_new_arrival: z.boolean(),
   is_feature: z.boolean(),
   rating_count: z.number().min(0),

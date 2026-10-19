@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import aysncHandler from "../utils/asyncHandler";
 import { Product } from "../models/productSchema";
 import { AuthRequest } from "../middlewares/authMiddleware";
+import { uploadSingleImage } from "../utils/cloudinary";
 
 //@route method - POST | path - api/product
 //@desc create new Product
@@ -9,19 +10,50 @@ import { AuthRequest } from "../middlewares/authMiddleware";
 
 export const createProduct = aysncHandler(
   async (req: AuthRequest, res: Response) => {
-    const {
-      name,
-      description,
-      price,
-      category,
-      instock_count,
-      images,
-      color,
-      sizes,
-      is_new_arrival,
-      is_feature,
-      rating_count,
-    } = req.body;
+    // const {
+    //   name,
+    //   description,
+    //   price,
+    //   category,
+    //   instock_count,
+    //   images,
+    //   color,
+    //   sizes,
+    //   is_new_arrival,
+    //   is_feature,
+    //   rating_count,
+    // } = req.body;
+
+    const { name, description, category } = req.body;
+
+    const sizes = Array.isArray(req.body.sizes)
+      ? req.body.sizes
+      : [req.body.sizes];
+    const color = Array.isArray(req.body.color)
+      ? req.body.color
+      : [req.body.color];
+
+    const price = Number(req.body.price);
+    const instock_count = Number(req.body.instock_count);
+    const rating_count = Number(req.body.rating_count);
+
+    const is_feature = req.body.is_feature === "true";
+    const is_new_arrival = req.body.is_new_arrival === "true";
+
+    const images = req.files as Express.Multer.File[];
+
+    const uploadedImages = await Promise.all(
+      images.map(async (image) => {
+        const uploadImg = await uploadSingleImage(
+          `data : ${image.mimetype};base64,${image.buffer.toString("base64")}`,
+          "auara.com/product",
+        );
+        return {
+          url: uploadImg.image_url,
+          public_alt: uploadImg.public_alt,
+        };
+      }),
+    );
 
     const newProduct = await Product.create({
       name,
@@ -29,7 +61,7 @@ export const createProduct = aysncHandler(
       price,
       category,
       instock_count,
-      images,
+      images: uploadedImages,
       color,
       sizes,
       is_new_arrival,

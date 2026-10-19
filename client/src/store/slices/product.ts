@@ -1,5 +1,6 @@
 import type { ProductImage, ProductMeta } from "@/types/product";
 import { apiSlice } from "./api";
+import type { ProductFormInputs } from "@/schema/product";
 
 export const productApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -45,6 +46,14 @@ export const productApiSlice = apiSlice.injectEndpoints({
     getProductMeta: builder.query<ProductMeta, string>({
       query: () => "/filter/meta",
     }),
+    createProduct: builder.mutation<ProductImage, FormData>({
+      query: (data) => ({
+        url: "/product",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Product"],
+    }),
   }),
 });
 
@@ -54,4 +63,5 @@ export const {
   useGetProductDetailsQuery,
   useGetProductFilterQuery,
   useGetProductMetaQuery,
+  useCreateProductMutation,
 } = productApiSlice;

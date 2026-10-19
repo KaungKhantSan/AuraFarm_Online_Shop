@@ -1,22 +1,25 @@
 import { Button } from "@/components/ui/button";
+import { fileToBase64 } from "@/lib/utils";
 import { X } from "lucide-react";
 import React from "react";
 
 interface ProductImageUploadProps {
-  images: Array<{ preview: string; file?: File; public_alt?: string }>;
+  images: Array<{ preview: string; public_alt?: string }>;
   onChange: (
-    images: Array<{ preview: string; file?: File; public_alt?: string }>,
+    images: Array<{ preview: string; file?: string; public_alt?: string }>,
   ) => void;
 }
 
 function ImageUpload({ images, onChange }: ProductImageUploadProps) {
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
-    const newImages = files.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-    }));
+    const newImages = await Promise.all(
+      files.map(async (file) => ({
+        file: await fileToBase64(file),
+        preview: URL.createObjectURL(file),
+      })),
+    );
 
     onChange([...images, ...newImages]);
   };
@@ -35,7 +38,7 @@ function ImageUpload({ images, onChange }: ProductImageUploadProps) {
     <div>
       <div className="grid grid-cols-5 gap-2">
         {images.map((image, index) => (
-          <div className="relative group">
+          <div className="relative group" key={index}>
             <img
               src={image.preview}
               alt={`Preview ${image.public_alt}`}
