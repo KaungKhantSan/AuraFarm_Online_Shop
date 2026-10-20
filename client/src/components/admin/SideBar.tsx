@@ -11,7 +11,7 @@ function SideBar() {
   return (
     <div>
       {pages.map((page, index) => (
-        <div className="flex gap-1">
+        <div className="flex gap-1" key={index}>
           {page.icon}
           <Link to={page.path} className="font-medium">
             {page.name}

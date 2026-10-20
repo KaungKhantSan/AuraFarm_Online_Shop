@@ -45,7 +45,7 @@ export const createProduct = aysncHandler(
     const uploadedImages = await Promise.all(
       images.map(async (image) => {
         const uploadImg = await uploadSingleImage(
-          `data : ${image.mimetype};base64,${image.buffer.toString("base64")}`,
+          `data:${image.mimetype};base64,${image.buffer.toString("base64")}`,
           "auara.com/product",
         );
         return {

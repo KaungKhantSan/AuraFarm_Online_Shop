@@ -1,5 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { productSchema, type ProductFormInputs } from "@/schema/product";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,10 +47,13 @@ function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPropts) {
             <Controller
               control={form.control}
               name="name"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <Field>
                   <FieldLabel>Product Name</FieldLabel>
                   <Input {...field} />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -54,10 +62,13 @@ function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPropts) {
             <Controller
               control={form.control}
               name="description"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <Field>
                   <FieldLabel>Description</FieldLabel>
                   <Tiptap value={field.value} onChange={field.onChange} />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -128,10 +139,13 @@ function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPropts) {
             <Controller
               control={form.control}
               name="color"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <Field>
                   <FieldLabel>Color</FieldLabel>
                   <ColorPicker colors={field.value} onChange={field.onChange} />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -140,10 +154,13 @@ function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPropts) {
             <Controller
               control={form.control}
               name="sizes"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <Field>
                   <FieldLabel>Sizes</FieldLabel>
                   <Sizes sizes={field.value} onChange={field.onChange} />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
