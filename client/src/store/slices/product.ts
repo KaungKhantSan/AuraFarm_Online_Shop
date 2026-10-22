@@ -1,6 +1,5 @@
 import type { ProductImage, ProductMeta } from "@/types/product";
 import { apiSlice } from "./api";
-import type { ProductFormInputs } from "@/schema/product";
 
 export const productApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -54,6 +53,17 @@ export const productApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Product"],
     }),
+    updateProduct: builder.mutation<
+      ProductImage,
+      { id: string; formData: FormData }
+    >({
+      query: (data) => ({
+        url: `/product/${data.id}`,
+        method: "PUT",
+        body: data.formData,
+      }),
+      invalidatesTags: ["Product"],
+    }),
   }),
 });
 
@@ -64,4 +74,5 @@ export const {
   useGetProductFilterQuery,
   useGetProductMetaQuery,
   useCreateProductMutation,
+  useUpdateProductMutation,
 } = productApiSlice;

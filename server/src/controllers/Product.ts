@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import aysncHandler from "../utils/asyncHandler";
 import { Product } from "../models/productSchema";
 import { AuthRequest } from "../middlewares/authMiddleware";
-import { uploadSingleImage } from "../utils/cloudinary";
+import { deleteImage, uploadSingleImage } from "../utils/cloudinary";
 
 //@route method - POST | path - api/product
 //@desc create new Product
@@ -85,42 +85,92 @@ export const createProduct = aysncHandler(
 
 export const UpdateProduct = aysncHandler(
   async (req: Request, res: Response) => {
-    const {
-      name,
-      description,
-      price,
-      category,
-      instock_count,
-      images,
-      color,
-      sizes,
-      is_new_arrival,
-      is_feature,
-      rating_count,
-    } = req.body;
+    const { name, description, category, existingImages } = req.body;
 
     const { id } = req.params;
 
-    const existingUser = await Product.findById(id);
+    const sizes = Array.isArray(req.body.sizes)
+      ? req.body.sizes
+      : [req.body.sizes];
+    const color = Array.isArray(req.body.color)
+      ? req.body.color
+      : [req.body.color];
 
-    if (!existingUser) {
+    const price = Number(req.body.price);
+    const instock_count = Number(req.body.instock_count);
+    const rating_count = Number(req.body.rating_count);
+
+    const is_feature = req.body.is_feature === "true";
+    const is_new_arrival = req.body.is_new_arrival === "true";
+
+    //parse existing images
+    const keepExistingImage = existingImages ? JSON.parse(existingImages) : [];
+
+    //new image upload
+    const newImages = req.files as Express.Multer.File[];
+
+    const existingProduct = await Product.findById(id);
+
+    if (!existingProduct) {
       res.status(404);
       throw new Error("Product Not Found with this ID.");
     }
 
-    existingUser.name = name || existingUser.name;
-    existingUser.description = description || existingUser.description;
-    existingUser.price = price || existingUser.price;
-    existingUser.category = category || existingUser.category;
-    existingUser.instock_count = instock_count || existingUser.instock_count;
-    existingUser.images = images || existingUser.images;
-    existingUser.color = color || existingUser.color;
-    existingUser.sizes = sizes || existingUser.sizes;
-    existingUser.is_new_arrival = is_new_arrival || existingUser.is_new_arrival;
-    existingUser.is_feature = is_feature || existingUser.is_feature;
-    existingUser.rating_count = rating_count || existingUser.rating_count;
+    //images to delete
 
-    const updatedProduct = await existingUser.save();
+    const imagesToDelete = existingProduct.images.filter((existingImg) => {
+      return !keepExistingImage.some(
+        (keepImg: any) => keepImg.public_alt === existingImg.public_alt,
+      );
+    });
+
+    if (imagesToDelete.length > 0) {
+      await Promise.all(
+        imagesToDelete.map(async (img) => {
+          if (img.public_alt) {
+            try {
+              await deleteImage(img.public_alt);
+            } catch (error) {
+              console.log(`Failed to delete image${img.public_alt}`, error);
+            }
+          }
+        }),
+      );
+    }
+
+    let uploadedNewImages: any[] = [];
+    if (newImages && newImages.length > 0) {
+      uploadedNewImages = await Promise.all(
+        newImages.map(async (newImg) => {
+          const uploadImg = await uploadSingleImage(
+            `data:${newImg.mimetype};base64,${newImg.buffer.toString("base64")}`,
+            "auara.com/product",
+          );
+          return {
+            url: uploadImg.image_url,
+            public_alt: uploadImg.public_alt,
+          };
+        }),
+      );
+    }
+
+    const finalImages = [...keepExistingImage, ...uploadedNewImages];
+
+    existingProduct.name = name || existingProduct.name;
+    existingProduct.description = description || existingProduct.description;
+    existingProduct.price = price || existingProduct.price;
+    existingProduct.category = category || existingProduct.category;
+    existingProduct.instock_count =
+      instock_count || existingProduct.instock_count;
+    existingProduct.images = finalImages;
+    existingProduct.color = color || existingProduct.color;
+    existingProduct.sizes = sizes || existingProduct.sizes;
+    existingProduct.is_new_arrival =
+      is_new_arrival || existingProduct.is_new_arrival;
+    existingProduct.is_feature = is_feature || existingProduct.is_feature;
+    existingProduct.rating_count = rating_count || existingProduct.rating_count;
+
+    const updatedProduct = await existingProduct.save();
 
     res.status(200).json(updatedProduct);
   },
@@ -134,13 +184,13 @@ export const DeleteProduct = aysncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const existingUser = Product.findById(id);
+    const existingProduct = Product.findById(id);
 
-    if (!existingUser) {
+    if (!existingProduct) {
       res.status(401).json({ message: "No product found with this ID" });
     }
 
-    await existingUser.deleteOne();
+    await existingProduct.deleteOne();
 
     res.status(200).json({ message: "Product deleted" });
   },

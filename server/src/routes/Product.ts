@@ -21,7 +21,13 @@ router.post(
   upload.array("images"),
   createProduct,
 );
-router.put("/product/:id", protect, isAdmin, UpdateProduct);
+router.put(
+  "/product/:id",
+  protect,
+  isAdmin,
+  upload.array("images"),
+  UpdateProduct,
+);
 router.delete("/product/:id", protect, isAdmin, DeleteProduct);
 
 router.get("/product", getProductWithFilter);

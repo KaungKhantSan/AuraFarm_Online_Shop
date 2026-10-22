@@ -178,7 +178,7 @@ function ProductFilter() {
                 id={product._id}
                 image={product.images[0].url}
                 price={product.price}
-                rating={product.rating}
+                rating_count={product.rating_count}
                 key={product._id}
               />
             ))}

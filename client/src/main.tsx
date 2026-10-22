@@ -17,7 +17,8 @@ import ForgotPasswordLogin from "./Pages/ForgotPasswordLogin.tsx";
 import ProductFilter from "./Pages/ProductFilter.tsx";
 import IsAdmin from "./Pages/protector/IsAdmin.tsx";
 import ProductCreate from "./Pages/admin/ProductCreate.tsx";
-import Panel from "./Pages/admin/Panel.tsx";
+import Panel from "./components/admin/Panel.tsx";
+import ProductUpdate from "./Pages/admin/ProductEdit.tsx";
 
 const router = createBrowserRouter([
   {
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
           {
             path: "/admin/product-create",
             element: <ProductCreate />,
+          },
+          {
+            path: "/admin/product-edit/:id",
+            element: <ProductUpdate />,
           },
         ],
       },

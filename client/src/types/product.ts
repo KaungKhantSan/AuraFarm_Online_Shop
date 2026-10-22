@@ -9,7 +9,7 @@ export interface ProductImage {
   category: string;
   sizes: string[];
   color: string[];
-  rating: number;
+  rating_count: number;
   images: Image[];
   description: string;
 }

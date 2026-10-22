@@ -16,6 +16,7 @@ import Sizes from "../../components/admin/Sizes";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import Tiptap from "@/components/editor/Tiptap";
+import { useEffect } from "react";
 
 interface ProductFormPropts {
   initialData?: any;
@@ -25,20 +26,58 @@ interface ProductFormPropts {
 function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPropts) {
   const form = useForm<ProductFormInputs>({
     resolver: zodResolver(productSchema),
-    defaultValues: initialData || {
-      name: "",
-      description: "",
-      category: "",
-      price: 0,
-      color: [],
-      sizes: [],
-      images: [],
-      instock_count: 0,
-      is_feature: false,
-      is_new_arrival: false,
-      rating_count: 0,
-    },
+    defaultValues: initialData
+      ? {
+          name: initialData.name,
+          description: initialData.description,
+          category: initialData.category,
+          price: initialData.price,
+          color: initialData.color,
+          sizes: initialData.sizes,
+          instock_count: initialData.instock_count,
+          is_feature: initialData.is_feature,
+          is_new_arrival: initialData.is_new_arrival,
+          rating_count: initialData.rating_count,
+          images: initialData.images.map((img: any) => ({
+            url: img.url,
+            public_alt: img.url,
+          })),
+        }
+      : {
+          name: "",
+          description: "",
+          category: "",
+          price: 0,
+          color: [],
+          sizes: [],
+          images: [],
+          instock_count: 0,
+          is_feature: false,
+          is_new_arrival: false,
+          rating_count: 0,
+        },
   });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        name: initialData.name,
+        description: initialData.description,
+        category: initialData.category,
+        price: initialData.price,
+        color: initialData.color,
+        sizes: initialData.sizes,
+        instock_count: initialData.instock_count,
+        is_feature: initialData.is_feature,
+        is_new_arrival: initialData.is_new_arrival,
+        rating_count: initialData.rating_count,
+        images: initialData.images.map((img: any) => ({
+          url: img.url,
+          public_alt: img.url,
+        })),
+      });
+    }
+  }, [FormData, initialData]);
   return (
     <Card>
       <CardContent>

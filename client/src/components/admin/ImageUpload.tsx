@@ -3,9 +3,13 @@ import { X } from "lucide-react";
 import React from "react";
 
 interface ProductImageUploadProps {
-  images: Array<{ preview: string; file?: File; public_alt?: string }>;
+  images: Array<{
+    url: string;
+    file?: File;
+    public_alt?: string;
+  }>;
   onChange: (
-    images: Array<{ preview: string; file?: File; public_alt?: string }>,
+    images: Array<{ url: string; file?: File; public_alt?: string }>,
   ) => void;
 }
 
@@ -16,7 +20,7 @@ function ImageUpload({ images, onChange }: ProductImageUploadProps) {
     const newImages = await Promise.all(
       files.map(async (file) => ({
         file,
-        preview: URL.createObjectURL(file),
+        url: URL.createObjectURL(file),
       })),
     );
 
@@ -26,8 +30,8 @@ function ImageUpload({ images, onChange }: ProductImageUploadProps) {
   const removeImage = (index: number) => {
     const newImages = [...images];
 
-    if (images[index].preview.startsWith("blob:")) {
-      URL.revokeObjectURL(images[index].preview);
+    if (images[index]?.url?.startsWith("blob:")) {
+      URL.revokeObjectURL(images[index].url);
     }
 
     newImages.splice(index, 1);
@@ -39,9 +43,9 @@ function ImageUpload({ images, onChange }: ProductImageUploadProps) {
         {images.map((image, index) => (
           <div className="relative group" key={index}>
             <img
-              src={image.preview}
-              alt={`Preview ${image.public_alt}`}
-              className="w-full h-32 object-cover rounded-lg"
+              src={image.url}
+              alt={`Preview ${index + 1}`}
+              className={`w-full h-32 object-cover rounded-lg ${image.file && "border-4 border-blue-300"}`}
             />
             <Button
               type="button"
