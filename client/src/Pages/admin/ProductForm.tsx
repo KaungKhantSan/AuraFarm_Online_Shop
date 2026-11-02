@@ -22,8 +22,14 @@ interface ProductFormPropts {
   initialData?: any;
   onSubmit: (data: ProductFormInputs) => void;
   isLoading: boolean;
+  isUpdating: boolean;
 }
-function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPropts) {
+function ProductForm({
+  initialData,
+  onSubmit,
+  isLoading,
+  isUpdating,
+}: ProductFormPropts) {
   const form = useForm<ProductFormInputs>({
     resolver: zodResolver(productSchema),
     defaultValues: initialData
@@ -40,7 +46,7 @@ function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPropts) {
           rating_count: initialData.rating_count,
           images: initialData.images.map((img: any) => ({
             url: img.url,
-            public_alt: img.url,
+            public_alt: img.public_alt,
           })),
         }
       : {
@@ -73,7 +79,7 @@ function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPropts) {
         rating_count: initialData.rating_count,
         images: initialData.images.map((img: any) => ({
           url: img.url,
-          public_alt: img.url,
+          public_alt: img.public_alt,
         })),
       });
     }
@@ -240,9 +246,13 @@ function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPropts) {
               />
             </FieldGroup>
           </div>
-          <Button type="submit" disabled={isLoading} className={"w-full"}>
-            {isLoading
-              ? "Saving..."
+          <Button
+            type="submit"
+            disabled={isLoading || isUpdating}
+            className={"w-full"}
+          >
+            {isUpdating || isLoading
+              ? "saving..."
               : initialData
                 ? "Update Product"
                 : "Create Product"}

@@ -76,6 +76,7 @@ function ProductUpdate() {
         onSubmit={onSubmit}
         isLoading={isLoading}
         initialData={initialdata}
+        isUpdating={isUpdating}
       />
     </div>
   );

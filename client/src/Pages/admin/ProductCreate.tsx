@@ -47,7 +47,11 @@ function ProductCreate() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-2">Create Product</h1>
-      <ProductForm onSubmit={onSubmit} isLoading={isLoading} />
+      <ProductForm
+        onSubmit={onSubmit}
+        isLoading={isLoading}
+        isUpdating={false}
+      />
     </div>
   );
 }

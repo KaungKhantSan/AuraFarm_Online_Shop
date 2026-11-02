@@ -2,6 +2,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Bold, Italic, List } from "lucide-react";
 import { Button } from "../ui/button";
+import { useEffect } from "react";
 
 interface tipTapProps {
   value: string;
@@ -16,6 +17,12 @@ const Tiptap = ({ value, onChange }: tipTapProps) => {
       onChange(editor.getHTML());
     },
   });
+
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value);
+    }
+  }, [editor, value]);
 
   if (!editor) return null;
 
