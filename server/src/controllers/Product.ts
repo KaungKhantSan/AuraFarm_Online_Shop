@@ -184,15 +184,38 @@ export const DeleteProduct = aysncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const existingProduct = Product.findById(id);
+    const existingProduct = await Product.findById(id);
 
     if (!existingProduct) {
       res.status(401).json({ message: "No product found with this ID" });
     }
 
-    await existingProduct.deleteOne();
+    const imagesToDeleteWithPublicAlt = existingProduct?.images.map(
+      (img) => img.public_alt,
+    );
 
-    res.status(200).json({ message: "Product deleted" });
+    try {
+      await existingProduct?.deleteOne();
+
+      if (!imagesToDeleteWithPublicAlt) {
+        return;
+      }
+
+      if (imagesToDeleteWithPublicAlt?.length > 0) {
+        Promise.all(
+          imagesToDeleteWithPublicAlt.map(async (imgAlt) => {
+            try {
+              await deleteImage(imgAlt);
+            } catch (error) {
+              console.log("Failed to delete image" + imgAlt, error);
+            }
+          }),
+        );
+      }
+      res.status(200).json({ message: "Product deleted" });
+    } catch (error) {
+      throw new Error("Failed to delete images.");
+    }
   },
 );
 

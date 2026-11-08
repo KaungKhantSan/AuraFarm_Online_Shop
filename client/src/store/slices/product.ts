@@ -5,12 +5,15 @@ export const productApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getNewArrival: builder.query({
       query: () => "/product/new",
+      providesTags: ["Product"],
     }),
     getIsFeatured: builder.query({
       query: () => "/product/isfeatured",
+      providesTags: ["Product"],
     }),
     getProductDetails: builder.query<ProductImage, string>({
       query: (id: string) => `/product/${id}`,
+      providesTags: ["Product"],
     }),
     getProductFilter: builder.query({
       query: ({
@@ -41,9 +44,11 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
         return `/product?${params.toString()}`;
       },
+      providesTags: ["Product"],
     }),
     getProductMeta: builder.query<ProductMeta, string>({
       query: () => "/filter/meta",
+      providesTags: ["Product"],
     }),
     createProduct: builder.mutation<ProductImage, FormData>({
       query: (data) => ({
@@ -64,6 +69,13 @@ export const productApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Product"],
     }),
+    deleteProduct: builder.mutation<string, { id: string }>({
+      query: (data) => ({
+        url: `/product/${data.id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Product"],
+    }),
   }),
 });
 
@@ -75,4 +87,5 @@ export const {
   useGetProductMetaQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
+  useDeleteProductMutation,
 } = productApiSlice;

@@ -1,6 +1,6 @@
-import { Package, PackagePlus } from "lucide-react";
+import { ChartLine, Package, UserCog } from "lucide-react";
 import type React from "react";
-import { Link } from "react-router";
+import { Link, NavLink } from "react-router";
 
 interface Page {
   name: string;
@@ -15,23 +15,34 @@ const pages: Page[] = [
     icon: <Package className="w-6 h-6" />,
   },
   {
-    name: "Create Product",
-    path: "/admin/product-create",
-    icon: <PackagePlus className="w-6 h-6" />,
+    name: "Dashboard",
+    path: "/admin/dashBoard",
+    icon: <ChartLine className="w-6 h-6" />,
+  },
+  {
+    name: "Manage Product",
+    path: "/admin/manage-user",
+    icon: <UserCog className="w-6 h-6" />,
   },
 ];
 function SideBar() {
   return (
-    <div>
-      {pages.map((page, index) => (
-        <div className="flex gap-1 space-y-4" key={index}>
-          {page.icon}
-          <Link to={page.path} className="font-medium">
+    <nav className="h-full">
+      <div className="flex gap-2 space-y-2 flex-col pr-4">
+        {pages.map((page, index) => (
+          <NavLink
+            to={page.path}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 rounded-lg font-medium text-sm py-2 ${isActive ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`
+            }
+            key={index}
+          >
+            {page.icon}
             {page.name}
-          </Link>
-        </div>
-      ))}
-    </div>
+          </NavLink>
+        ))}
+      </div>
+    </nav>
   );
 }
 

@@ -20,6 +20,8 @@ import ProductCreate from "./Pages/admin/ProductCreate.tsx";
 import Panel from "./components/admin/Panel.tsx";
 import ProductUpdate from "./Pages/admin/ProductEdit.tsx";
 import ProductManagement from "./Pages/admin/ProductManagement.tsx";
+import UserManagement from "./Pages/admin/UserManagement.tsx";
+import DashBoard from "./Pages/admin/DashBoard.tsx";
 
 const router = createBrowserRouter([
   {
@@ -81,6 +83,14 @@ const router = createBrowserRouter([
           {
             path: "/admin/manage-products",
             element: <ProductManagement />,
+          },
+          {
+            path: "/admin/manage-user",
+            element: <UserManagement />,
+          },
+          {
+            path: "/admin/dashBoard",
+            element: <DashBoard />,
           },
         ],
       },

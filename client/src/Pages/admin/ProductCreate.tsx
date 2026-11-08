@@ -35,7 +35,7 @@ function ProductCreate() {
         type: "success",
         description: "Product create successfully.",
       });
-      navigate("/admin/product");
+      navigate("/admin/manage-products");
     } catch (error) {
       console.log("Product creation failed.", error);
       toast.add({

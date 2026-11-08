@@ -59,7 +59,7 @@ function ProductUpdate() {
         type: "success",
         description: "Product update successfully.",
       });
-      navigate("/admin/product");
+      navigate("/admin/manage-products");
     } catch (error) {
       console.log("Product update failed.", error);
       toast.add({

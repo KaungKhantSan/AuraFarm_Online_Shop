@@ -13,6 +13,7 @@ export interface ProductImage {
   rating_count: number;
   images: Image[];
   description: string;
+  createdAt: string | Date;
 }
 
 export interface ProductMeta {
