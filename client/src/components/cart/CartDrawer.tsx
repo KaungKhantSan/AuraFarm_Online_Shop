@@ -1,100 +1,87 @@
 import { X } from "lucide-react";
 import CartList from "./CartList";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "@/store";
+import { Button } from "../ui/button";
+import { clearCart } from "@/store/slices/cart";
+import { useCreateOrderMutation } from "@/store/slices/orderApi";
 
 interface iscartopenProps {
-    iscartopen : boolean;
-    toggleCart() : void;
+  iscartopen: boolean;
+  toggleCart(): void;
 }
 
-const products = [
-    {
-        id : 1,
-        name : "T-shirt-1",
-        price : 250,
-        category : "Man",
-        size : ["S","M","XL"],
-        colors : ["Blue","Black","White"],
-        rating : 5,
-        images : [
-            {
-            url : "https://static.vecteezy.com/system/resources/thumbnails/051/866/612/small_2x/back-view-of-black-plain-t-shirt-mockup-png.png",
-            },
-                {
-            url : "https://static.vecteezy.com/system/resources/thumbnails/051/866/612/small_2x/back-view-of-black-plain-t-shirt-mockup-png.png",
-                }
-                ]
-    },
-    {
-        id : 2,
-        name : "T-shirt-2",
-        price : 200,
-        category : "Man",
-        size : ["S","M","XL"],
-        colors : ["Blue","Black","White"],
-        rating : 4,
-        images : [
-            {
-            url : "https://static.vecteezy.com/system/resources/thumbnails/051/866/612/small_2x/back-view-of-black-plain-t-shirt-mockup-png.png",
-            },
-                {
-            url : "https://static.vecteezy.com/system/resources/thumbnails/051/866/612/small_2x/back-view-of-black-plain-t-shirt-mockup-png.png",
-                }
-        ]
-    },
-    {
-        id : 3,
-        name : "T-shirt-3",
-        price : 230,
-        category : "Man",
-        size : ["S","M","XL"],
-        colors : ["Blue","Black","White"],
-        rating : 4,
-        images : [
-            {
-            url : "https://static.vecteezy.com/system/resources/thumbnails/051/866/612/small_2x/back-view-of-black-plain-t-shirt-mockup-png.png",
-            },
-                {
-            url : "https://static.vecteezy.com/system/resources/thumbnails/051/866/612/small_2x/back-view-of-black-plain-t-shirt-mockup-png.png",
-                }
-        ]
-    },
-    {
-        id : 4,
-        name : "T-shirt-4",
-        price : 300,
-        category : "Man",
-        size : ["S","M","XL"],
-        colors : ["Blue","Black","White"],
-        rating : 5,
-        images : [
-            {
-            url : "https://static.vecteezy.com/system/resources/thumbnails/051/866/612/small_2x/back-view-of-black-plain-t-shirt-mockup-png.png",
-            },
-                {
-            url : "https://static.vecteezy.com/system/resources/thumbnails/051/866/612/small_2x/back-view-of-black-plain-t-shirt-mockup-png.png",
-                }
-        ]
+function CartDrawer({ iscartopen, toggleCart }: iscartopenProps) {
+  const products = useSelector((state: RootState) => state.cart.item);
+  const dispatch = useDispatch();
+  const productInCart = useSelector(
+    (state: RootState) => state.cart.item.length,
+  );
+  const [createOrder, { isLoading }] = useCreateOrderMutation();
+  const bill = products.reduce(
+    (sum, items) => sum + Number(items.price) * items.quantity,
+    0,
+  );
+  const checkOutHandler = async () => {
+    try {
+      const { url } = await createOrder({ items: products, bill }).unwrap();
+      window.location.href = url;
+    } catch (err) {
+      console.log(err);
     }
-]
-
-function CartDrawer({iscartopen,toggleCart} : iscartopenProps) {
+  };
   return (
-    <div className={`bg-gray-200 fixed top-0 right-0 w-1/4 h-full transform transition-transform duration-300 z-50 p-4 ${
+    <div
+      className={`bg-gray-200 fixed top-0 right-0 w-1/4 h-full transform transition-transform duration-300 z-50 p-4 ${
         iscartopen ? "translate-x-0" : "translate-x-full"
       }`}
-      >
-        <div className="flex justify-end w-full">
-            <X onClick={toggleCart}/>
-        </div>
-        <h2 className="text-2xl font-bold my-4">Your Cart</h2>
-            <div>
-                {products.map(product => <CartList name={product.name} price={product.price} color={product.colors[0]} size={product.size[0]} key={product.id} image={product.images[0].url}/>)}
-            </div>
-            <button className="bg-gray-500 w-full py-4 text-white rounded-md fixed bottom-1 left-0 mb-2">
-                Go to Checkout
-            </button>
+    >
+      <div className="flex justify-end w-full">
+        <X onClick={toggleCart} className="cursor-pointer" />
       </div>
-  )
+      <div className="mt-4 mb-8 flex items-center justify-between">
+        <h2 className="text-2xl font-bold my-4">Your Cart</h2>
+        {productInCart > 1 && (
+          <Button
+            size={"sm"}
+            variant={"destructive"}
+            className={"cursor-pointer"}
+            onClick={() => dispatch(clearCart())}
+          >
+            Clear All
+          </Button>
+        )}
+      </div>
+      <div>
+        {products.map((product) => (
+          <CartList
+            name={product.name}
+            price={Number(product.price)}
+            color={product.color}
+            size={product.size}
+            key={product.key}
+            image={product.image}
+            quantity={product.quantity}
+            productKey={product.key!}
+          />
+        ))}
+      </div>
+      {products.length === 0 && (
+        <div>
+          <p>No item in cart.</p>
+        </div>
+      )}
+      {products.length > 0 && (
+        <button
+          className="bg-gray-500 w-full py-4 px-2 text-white rounded-md fixed bottom-1 left-0 mb-2 cursor-pointer"
+          onClick={checkOutHandler}
+          disabled={isLoading}
+        >
+          Go to Checkout
+        </button>
+      )}
+    </div>
+  );
 }
 
-export default CartDrawer
+export default CartDrawer;

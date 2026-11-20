@@ -14,6 +14,8 @@ export interface ProductImage {
   images: Image[];
   description: string;
   createdAt: string | Date;
+  is_new_arrival: boolean;
+  is_feature: boolean;
 }
 
 export interface ProductMeta {

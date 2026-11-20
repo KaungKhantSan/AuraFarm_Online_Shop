@@ -10,21 +10,36 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLogoutMutation } from "@/store/slices/userApi";
+import { useCurrentUserQuery, useLogoutMutation } from "@/store/slices/userApi";
 import { removeUserInfo } from "@/store/slices/auth";
+import { useEffect } from "react";
+import { apiSlice } from "@/store/slices/api";
 
 interface toggleProps {
   toggleCart(): void;
 }
 const TopBar = ({ toggleCart }: toggleProps) => {
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
-  const [logoutMutation, { isLoading, isError }] = useLogoutMutation();
+  const [logoutMutation, { isLoading }] = useLogoutMutation();
   const dispatch = useDispatch();
+  const { isError, data: currentUser } = useCurrentUserQuery();
+  const navigate = useNavigate();
+  const productInCart = useSelector(
+    (state: RootState) => state.cart.item.length,
+  );
+
+  useEffect(() => {
+    if (isError) {
+      dispatch(removeUserInfo());
+      navigate("/");
+    }
+  }, [isError]);
 
   const logouthandler = async () => {
     try {
       await logoutMutation({});
       dispatch(removeUserInfo());
+      dispatch(apiSlice.util.resetApiState());
     } catch (error) {
       console.log(error);
     }
@@ -37,7 +52,12 @@ const TopBar = ({ toggleCart }: toggleProps) => {
           <h2 className="font-bold text-2xl">Aura Farming</h2>
         </Link>
         <div className="flex gap-2">
-          <ShoppingBag onClick={toggleCart} />
+          <div className="relative">
+            <ShoppingBag onClick={toggleCart} className="cursor-pointer" />
+            <span className="text-xs bg-red-500 rounded-full w-4 h-4 absolute text-center -top-2 -right-2">
+              {productInCart}
+            </span>
+          </div>
           {userInfo ? (
             <DropdownMenu>
               <DropdownMenuTrigger className={"cursor-pointer"}>
@@ -62,6 +82,14 @@ const TopBar = ({ toggleCart }: toggleProps) => {
           ) : (
             <Link to={"/register"}>
               <LogIn />{" "}
+            </Link>
+          )}
+          {currentUser?.role === "admin" && (
+            <Link
+              to={"/admin/manage-products"}
+              className="bg-white text-black cursor-pointer rounded-md py-2 px-2"
+            >
+              Go to Admin panel
             </Link>
           )}
         </div>

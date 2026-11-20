@@ -3,6 +3,9 @@ import { useParams } from "react-router";
 import RatingConverter from "../common/RatingConverter";
 import { Minus, Plus } from "lucide-react";
 import { useGetProductDetailsQuery } from "@/store/slices/product";
+import { useDispatch } from "react-redux";
+import { addToCart } from "@/store/slices/cart";
+import { toast } from "@/components/ui/toast";
 
 function ProductDetails() {
   const [selectedImage, setSelectedIamge] = useState<string>();
@@ -10,6 +13,7 @@ function ProductDetails() {
   const [selectedSize, setSelectedSize] = useState<string>();
   const [quantity, setQuantity] = useState<number>(1);
   const { id } = useParams();
+  const dispatch = useDispatch();
 
   const { data: products, isLoading } = useGetProductDetailsQuery(id as string);
 
@@ -27,6 +31,24 @@ function ProductDetails() {
 
   if (isLoading) return <p>Loading...</p>;
   if (!products) return <p>Product not found.</p>;
+
+  const ProductAddToCartHandler = () => {
+    toast.add({
+      type: "success",
+      description: "Product added to cart.",
+    });
+    dispatch(
+      addToCart({
+        productId: products._id,
+        name: products.name,
+        price: products.price,
+        color: selectedColor,
+        size: selectedSize,
+        image: selectedImage,
+        quantity,
+      }),
+    );
+  };
 
   return (
     <section className="mt-8">
@@ -92,7 +114,7 @@ function ProductDetails() {
                 </button>
                 <span className="font-medium">{quantity}</span>
                 <button
-                  className="bg-black p-2 text-white rounded-md"
+                  className="bg-black p-2 text-white rounded-md cursor-pointer"
                   onClick={() =>
                     setQuantity((prev) => {
                       if (prev === 1) {
@@ -112,7 +134,10 @@ function ProductDetails() {
               Price - ${products.price}
             </div>
             <div>
-              <button className="w-full text-center bg-add-to-cart text-white rounded-full px-6 py-2 font-extrabold">
+              <button
+                className="w-full text-center bg-add-to-cart text-white rounded-full px-6 py-2 font-extrabold cursor-pointer"
+                onClick={ProductAddToCartHandler}
+              >
                 Add To Cart
               </button>
             </div>
