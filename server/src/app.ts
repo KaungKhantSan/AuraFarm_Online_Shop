@@ -24,19 +24,16 @@ app.use(
   }),
 );
 
-app.use(json());
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
 app.use(cooki_parser());
 
-//routes
-app.use("/api", UserRoute);
-app.use("/api", ProductRoute);
-app.use("/api", OrderRoute);
-
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 app.post(
-  "/webhook",
+  "/stripe/webhook",
   express.raw({ type: "application/json" }),
   async (req: Request, res: Response) => {
+    console.log("Stripe webhook is online.");
+
     let event = req.body;
     if (endpointSecret) {
       const signature = req.headers["stripe-signature"];
@@ -56,16 +53,24 @@ app.post(
       }
     }
 
-    try {
-      switch (event.type) {
-        case "checkout.session.completed": {
+    switch (event.type) {
+      case "checkout.session.completed":
+        console.log("EVENT TYPE===>", event.type);
+
+        try {
           const session = event.data.object;
-          const userId = session.metadata.userId;
-          const email = session.metadata.email;
+          console.log(event.data, session);
+
+          const userId = session.metadata.customerId;
+          const email = session.metadata.customer;
           const bill = Number(session.metadata.bill);
           const tempCartId = session.metadata.tempCartId;
 
-          const tempCart = await temporaryCart.findById(tempCartId);
+          if (!userId || !email || !bill || !tempCartId) {
+            throw new Error("Missing some metadata");
+          }
+
+          const tempCart = await tempCartId.findById(tempCartId);
 
           await Order.create({
             userId,
@@ -73,25 +78,30 @@ app.post(
             bill: bill,
             paymentIntentId: session.payment_intent,
             stripeSessionId: session.id,
-            items: tempCart?.items!,
+            items: tempCart?.items,
             status: "paid",
           });
 
-          await temporaryCart.findByIdAndDelete(tempCartId);
-
-          break;
+          await tempCartId.findByIdAndDelete(tempCartId);
+        } catch (err) {
+          console.log(err);
         }
-        default:
-          console.log(`Unhandled event type ${event.type}.`);
-      }
-    } catch (err: any) {
-      console.log(`Webhook handler failed.`, err.message);
-      return res.sendStatus(500);
+        break;
+      default:
+        // Unexpected event type
+        console.log(`Unhandled event type ${event.type}.`);
     }
-    // Return a 200 response to acknowledge receipt of the event
-    res.send();
+
+    res.sendStatus(200);
   },
 );
+
+app.use(json());
+
+//routes
+app.use("/api", UserRoute);
+app.use("/api", ProductRoute);
+app.use("/api", OrderRoute);
 
 app.use(ErrorHandler);
 

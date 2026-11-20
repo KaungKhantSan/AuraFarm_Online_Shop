@@ -46,7 +46,8 @@ export const CreateOrderSession = aysncHandler(
       success_url: `${process.env.CLIENT_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_URL}/order-cancelled`,
       metadata: {
-        customerId: customer?._id.toString()!,
+        userId: customer?._id.toString()!,
+        email: customer?.email!,
         bill: bill.toString(),
         tempCartId: tempCart.id,
       },
