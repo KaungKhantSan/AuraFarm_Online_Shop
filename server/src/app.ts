@@ -7,13 +7,16 @@ import UserRoute from "./routes/User";
 import ProductRoute from "./routes/Product";
 import OrderRoute from "./routes/Order";
 import ErrorHandler from "./middlewares/ErrorHandler";
-import stripe from "stripe";
-import temporaryCart from "./models/temCart";
+import Stripe from "stripe";
+import TempCart from "./models/tempCart";
 import Order from "./models/orderSchema";
 
 dotenv.config({
   path: ".env",
 });
+
+const stripe = new Stripe(process.env.STRIPE_SECRET!);
+const endpointSecret = "whsec_Y55rk2T5VJUzIe193rG5dYVZZMtbGkhL";
 
 const app = express();
 
@@ -24,8 +27,6 @@ app.use(
   }),
 );
 
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
 app.use(cooki_parser());
 
 app.post(
@@ -33,10 +34,10 @@ app.post(
   express.raw({ type: "application/json" }),
   async (req: Request, res: Response) => {
     console.log("Stripe webhook is online.");
-
     let event = req.body;
     if (endpointSecret) {
       const signature = req.headers["stripe-signature"];
+
       try {
         if (!signature) {
           throw new Error("Signature not found.");
@@ -47,9 +48,8 @@ app.post(
           endpointSecret,
         );
       } catch (err: any) {
-        console.log(`⚠️  Webhook signature verification failed.`, err.message);
-        res.sendStatus(400);
-        return;
+        console.log(`Webhook signature verification failed.`, err.message);
+        return res.sendStatus(400);
       }
     }
 
@@ -70,7 +70,8 @@ app.post(
             throw new Error("Missing some metadata");
           }
 
-          const tempCart = await tempCartId.findById(tempCartId);
+          const tempCart = await TempCart.findById(tempCartId);
+          if (!tempCart) throw new Error("TempCart is not found!");
 
           await Order.create({
             userId,
@@ -82,7 +83,7 @@ app.post(
             status: "paid",
           });
 
-          await tempCartId.findByIdAndDelete(tempCartId);
+          await TempCart.findByIdAndDelete(tempCartId);
         } catch (err) {
           console.log(err);
         }
@@ -113,6 +114,6 @@ app.listen(PORT, () => {
   console.log("Server is ruuning on", PORT);
 });
 
-// stripe listen --forward-thin-to localhost:4000/webhook --thin-events "*"
+// stripe listen --forward-thin-to localhost:4000/stripe/webhook --thin-events "*"
 
 // stripe trigger checkout.session.completed

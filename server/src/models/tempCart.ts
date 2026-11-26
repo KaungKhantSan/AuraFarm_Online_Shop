@@ -11,5 +11,5 @@ const tempCartSchema = new Schema({
   },
 });
 
-const temporaryCart = mongoose.model("TempCart", tempCartSchema);
-export default temporaryCart;
+const TempCart = mongoose.model("TempCart", tempCartSchema);
+export default TempCart;

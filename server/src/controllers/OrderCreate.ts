@@ -3,7 +3,7 @@ import { AuthRequest } from "../middlewares/authMiddleware";
 import aysncHandler from "../utils/asyncHandler";
 import Stripe from "stripe";
 import { OrderItem } from "../models/orderSchema";
-import temporaryCart from "../models/temCart";
+import TempCart from "../models/tempCart";
 
 //@route method - POST | path - api/create-order
 //@desc create order and checkout session
@@ -34,7 +34,7 @@ export const CreateOrderSession = aysncHandler(
       quantity: item.quantity,
     }));
 
-    const tempCart = await temporaryCart.create({
+    const tempCart = await TempCart.create({
       items,
       userId: customer?._id!,
     });
@@ -47,8 +47,8 @@ export const CreateOrderSession = aysncHandler(
       cancel_url: `${process.env.CLIENT_URL}/order-cancelled`,
       metadata: {
         userId: customer?._id.toString()!,
-        email: customer?.email!,
         bill: bill.toString(),
+        email: customer?.email?.toString()!,
         tempCartId: tempCart.id,
       },
     });
