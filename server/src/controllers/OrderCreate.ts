@@ -9,7 +9,7 @@ import TempCart from "../models/tempCart";
 //@desc create order and checkout session
 //@access private/Login User
 
-const stripe = Stripe(process.env.STRIPE_SECRET!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET!, {
   apiVersion: "2026-11-18.endive",
 });
 
@@ -46,9 +46,9 @@ export const CreateOrderSession = aysncHandler(
       success_url: `${process.env.CLIENT_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_URL}/order-cancelled`,
       metadata: {
-        userId: customer?._id.toString()!,
+        customerId: customer?._id.toString()!,
         bill: bill.toString(),
-        email: customer?.email?.toString()!,
+        customer: customer?.email?.toString()!,
         tempCartId: tempCart.id,
       },
     });

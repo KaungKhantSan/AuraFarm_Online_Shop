@@ -33,7 +33,7 @@ export const OrderItemSchema = new Schema<OrderItem>(
   { _id: false },
 );
 
-const OrderDocumentSchema = new Schema<OrderDocument>(
+const OrderSchema = new Schema<OrderDocument>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     items: { type: [OrderItemSchema], required: true },
@@ -50,5 +50,5 @@ const OrderDocumentSchema = new Schema<OrderDocument>(
   { timestamps: true },
 );
 
-const Order = mongoose.model<OrderDocument>("Order", OrderDocumentSchema);
+const Order = mongoose.model<OrderDocument>("Order", OrderSchema);
 export default Order;

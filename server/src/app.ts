@@ -16,7 +16,7 @@ dotenv.config({
 });
 
 const stripe = new Stripe(process.env.STRIPE_SECRET!);
-const endpointSecret = "whsec_Y55rk2T5VJUzIe193rG5dYVZZMtbGkhL";
+const endpointSecret = process.env.WEBHOOK_SECRET;
 
 const app = express();
 
@@ -32,68 +32,69 @@ app.use(cooki_parser());
 app.post(
   "/stripe/webhook",
   express.raw({ type: "application/json" }),
-  async (req: Request, res: Response) => {
-    console.log("Stripe webhook is online.");
+  async (req, res) => {
     let event = req.body;
-    if (endpointSecret) {
-      const signature = req.headers["stripe-signature"];
-
-      try {
-        if (!signature) {
-          throw new Error("Signature not found.");
-        }
-        event = stripe.webhooks.constructEvent(
-          req.body,
-          signature,
-          endpointSecret,
-        );
-      } catch (err: any) {
-        console.log(`Webhook signature verification failed.`, err.message);
-        return res.sendStatus(400);
-      }
+    // Get the signature sent by Stripe
+    const signature = req.headers["stripe-signature"];
+    try {
+      // Verify the signature and parse the thin event notification
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        signature!,
+        endpointSecret!,
+      );
+    } catch (err: any) {
+      console.log(`Webhook signature verification failed.`, err.message);
+      return res.sendStatus(400);
     }
+    try {
+      switch (event.type) {
+        case "checkout.session.completed": {
+          try {
+            const session = event.data.object;
+            console.log(event.data, session);
 
-    switch (event.type) {
-      case "checkout.session.completed":
-        console.log("EVENT TYPE===>", event.type);
+            const userId = session.metadata.customerId;
+            const email = session.metadata.customer;
+            const bill = Number(session.metadata.bill);
+            const tempCartId = session.metadata.tempCartId;
 
-        try {
-          const session = event.data.object;
-          console.log(event.data, session);
+            if (!userId || !email || !bill || !tempCartId) {
+              throw new Error("Missing some metadata");
+            }
 
-          const userId = session.metadata.customerId;
-          const email = session.metadata.customer;
-          const bill = Number(session.metadata.bill);
-          const tempCartId = session.metadata.tempCartId;
+            const tempCart = await TempCart.findById(tempCartId);
 
-          if (!userId || !email || !bill || !tempCartId) {
-            throw new Error("Missing some metadata");
+            if (!tempCart) {
+              throw new Error(`Temporary cart not found: ${tempCartId}`);
+            }
+
+            await Order.create({
+              userId,
+              customer: email,
+              bill: bill,
+              paymentIntentId: session.payment_intent,
+              stripeSessionId: session.id,
+              items: tempCart?.items,
+              status: "paid",
+            });
+
+            await TempCart.findByIdAndDelete(tempCartId);
+          } catch (err) {
+            console.log(err);
           }
-
-          const tempCart = await TempCart.findById(tempCartId);
-          if (!tempCart) throw new Error("TempCart is not found!");
-
-          await Order.create({
-            userId,
-            customer: email,
-            bill: bill,
-            paymentIntentId: session.payment_intent,
-            stripeSessionId: session.id,
-            items: tempCart?.items,
-            status: "paid",
-          });
-
-          await TempCart.findByIdAndDelete(tempCartId);
-        } catch (err) {
-          console.log(err);
+          break;
         }
-        break;
-      default:
-        // Unexpected event type
-        console.log(`Unhandled event type ${event.type}.`);
+        default:
+          // Unexpected event type
+          console.log(`Unhandled event type ${event.type}.`);
+      }
+    } catch (err: any) {
+      console.log(`Webhook handler failed.`, err.message);
+      return res.sendStatus(500);
     }
-
-    res.sendStatus(200);
+    // Return a 200 response to acknowledge receipt of the event
+    res.send();
   },
 );
 
